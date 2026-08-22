@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="哈尔滨工程大学材铸红心井冈山实践团主题网站">
+  <title>材铸红心</title>
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body class="home">
+  <header class="site-header" data-open="false">
+    <a class="brand-name" href="index.html" aria-label="返回材铸红心首页">材铸红心</a>
+    <button class="menu-button" type="button" aria-expanded="false" aria-controls="site-nav">导航</button>
+    <nav class="site-nav" id="site-nav" aria-label="主要导航">
+      <a class="nav-link" href="course.html" target="content-frame">团课视频</a>
+      <a class="nav-link" href="vlog.html" target="content-frame">Vlog集</a>
+      <a class="nav-link" href="reflections.html" target="content-frame">成员感悟</a>
+      <a class="nav-link" href="paper.html" target="content-frame">论文</a>
+      <a class="nav-link" href="gallery.html" target="content-frame">照片集</a>
+    </nav>
+  </header>
+
+  <div class="home-brandmarks" aria-label="网站联合标识">
+    <div class="corner-mark corner-mark--party">
+      <img src="assets/brand/cpc-emblem.png" alt="中国共产党党徽">
+    </div>
+    <div class="corner-mark corner-mark--heu">
+      <img src="assets/brand/heu-logo.png" alt="哈尔滨工程大学校徽与校名标识">
+    </div>
+  </div>
+
+  <main class="hero" aria-labelledby="hero-title">
+    <div class="hero-video-stack" aria-hidden="true">
+      <video class="hero-video is-active" data-hero-video autoplay muted loop playsinline preload="auto" poster="assets/images/hero-poster.png">
+        <source src="assets/video/hero-background.mp4" type="video/mp4">
+      </video>
+      <video class="hero-video" data-hero-video muted loop playsinline preload="auto">
+        <source src="assets/video/hero-background.mp4" type="video/mp4">
+      </video>
+    </div>
+    <div class="hero-title-wrap">
+      <h1 class="hero-title" id="hero-title">材铸红心</h1>
+      <p class="hero-subtitle">哈尔滨工程大学材铸红心实践团</p>
+    </div>
+  </main>
+
+  <iframe class="content-frame" name="content-frame" title="材铸红心内容页面" hidden></iframe>
+
+  <script src="assets/js/site.js"></script>
+</body>
+</html>
