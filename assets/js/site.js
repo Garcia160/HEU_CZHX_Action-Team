@@ -210,10 +210,9 @@
 
   if (embeddedPage) return;
 
-  const backgroundMusic = document.createElement("audio");
+  const backgroundMusic = document.querySelector("#background-music") || document.createElement("audio");
   const musicToggle = document.createElement("button");
   const musicNote = document.createElement("span");
-  const musicStateKey = "caizhu-background-music";
   const musicTimeKey = "caizhu-background-music-time";
   let autoplayBlocked = false;
   let shouldPlay = true;
@@ -234,14 +233,12 @@
     }
   };
 
-  const storedMusicState = readSession(musicStateKey);
-  if (storedMusicState === "paused") shouldPlay = false;
-
   backgroundMusic.id = "background-music";
   backgroundMusic.src = "assets/audio/eternal-crown.mp3";
-  backgroundMusic.autoplay = shouldPlay;
+  backgroundMusic.autoplay = true;
   backgroundMusic.loop = true;
   backgroundMusic.preload = "auto";
+  backgroundMusic.muted = false;
   backgroundMusic.volume = 0.2;
   backgroundMusic.setAttribute("aria-hidden", "true");
 
@@ -253,7 +250,8 @@
   musicNote.setAttribute("aria-hidden", "true");
   musicNote.textContent = "♪";
   musicToggle.append(musicNote);
-  document.body.append(backgroundMusic, musicToggle);
+  if (!backgroundMusic.isConnected) document.body.append(backgroundMusic);
+  document.body.append(musicToggle);
 
   const updateMusicControl = () => {
     const playing = !backgroundMusic.paused;
@@ -293,26 +291,46 @@
   musicToggle.addEventListener("click", async () => {
     if (backgroundMusic.paused) {
       shouldPlay = true;
-      writeSession(musicStateKey, "playing");
       await playBackgroundMusic();
     } else {
       shouldPlay = false;
       backgroundMusic.pause();
-      writeSession(musicStateKey, "paused");
     }
     updateMusicControl();
   });
 
-  const unlockMusic = (event) => {
-    if (event.target instanceof Element && event.target.closest(".music-toggle")) return;
-    if (shouldPlay && backgroundMusic.paused) playBackgroundMusic();
+  const unlockEvents = ["pointerdown", "touchstart", "keydown"];
+  const removeUnlockListeners = () => {
+    unlockEvents.forEach((eventName) => {
+      document.removeEventListener(eventName, unlockMusic, true);
+    });
   };
-  document.addEventListener("pointerdown", unlockMusic, { once: true, capture: true });
-  document.addEventListener("keydown", unlockMusic, { once: true, capture: true });
+
+  const unlockMusic = async (event) => {
+    if (event.target instanceof Element && event.target.closest(".music-toggle")) return;
+    if (!shouldPlay || !backgroundMusic.paused) {
+      removeUnlockListeners();
+      return;
+    }
+    const started = await playBackgroundMusic();
+    if (started) removeUnlockListeners();
+  };
+  unlockEvents.forEach((eventName) => {
+    document.addEventListener(eventName, unlockMusic, { capture: true, passive: eventName !== "keydown" });
+  });
+
+  window.addEventListener("pageshow", () => {
+    if (shouldPlay && backgroundMusic.paused) playBackgroundMusic();
+  });
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && shouldPlay && backgroundMusic.paused) {
+      playBackgroundMusic();
+    }
+  });
 
   window.addEventListener("pagehide", () => {
     writeSession(musicTimeKey, String(backgroundMusic.currentTime || 0));
-    writeSession(musicStateKey, shouldPlay ? "playing" : "paused");
   });
 
   updateMusicControl();
