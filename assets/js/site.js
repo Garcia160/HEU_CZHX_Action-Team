@@ -208,13 +208,31 @@
     });
   }
 
-  if (embeddedPage) return;
+  if (embeddedPage) {
+    const controlledMedia = Array.from(document.querySelectorAll("video[controls], audio[controls]"));
+    controlledMedia.forEach((media) => {
+      media.addEventListener("play", () => {
+        window.parent.postMessage({ type: "caizhu-content-media", state: "playing" }, "*");
+      });
+      media.addEventListener("pause", () => {
+        window.parent.postMessage({ type: "caizhu-content-media", state: "stopped" }, "*");
+      });
+      media.addEventListener("ended", () => {
+        window.parent.postMessage({ type: "caizhu-content-media", state: "stopped" }, "*");
+      });
+    });
+    window.addEventListener("pagehide", () => {
+      window.parent.postMessage({ type: "caizhu-content-media", state: "stopped" }, "*");
+    });
+    return;
+  }
 
   const backgroundMusic = document.querySelector("#background-music") || document.createElement("audio");
   const musicToggle = document.createElement("button");
   const musicNote = document.createElement("span");
   const musicTimeKey = "caizhu-background-music-time";
   let autoplayBlocked = false;
+  let musicPausedForContent = false;
   let shouldPlay = true;
 
   const readSession = (key) => {
@@ -326,6 +344,19 @@
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible" && shouldPlay && backgroundMusic.paused) {
       playBackgroundMusic();
+    }
+  });
+
+  window.addEventListener("message", (event) => {
+    if (!contentFrame || event.source !== contentFrame.contentWindow || event.data?.type !== "caizhu-content-media") return;
+    if (event.data.state === "playing") {
+      musicPausedForContent = shouldPlay && !backgroundMusic.paused;
+      if (musicPausedForContent) backgroundMusic.pause();
+      return;
+    }
+    if (event.data.state === "stopped" && musicPausedForContent) {
+      musicPausedForContent = false;
+      if (shouldPlay) playBackgroundMusic();
     }
   });
 
